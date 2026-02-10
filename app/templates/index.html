@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Epic Devotional</title>
+<style>
+body{font-family:Arial;margin:0;background:#111;color:#eee}
+.light{background:#fff;color:#111}
+.container{padding:20px;max-width:900px;margin:auto}
+.card{background:#222;margin:10px 0;padding:15px;border-radius:12px}
+.light .card{background:#f2f2f2}
+button,select,input{padding:10px;margin:5px;border-radius:8px;border:none}
+img{max-width:100%;border-radius:10px}
+</style>
+<script>
+function toggleTheme(){document.body.classList.toggle("light")}
+function gen(){
+ let v=document.getElementById("voice").value
+ let t=document.getElementById("topic").value
+ window.location="/generate?voice="+v+"&topic="+t
+}
+</script>
+</head>
+<body>
+<div class="container">
+<h2>Devotional Radio</h2>
+
+<select id="voice">
+<option>en-US-AriaNeural</option>
+<option>en-US-GuyNeural</option>
+<option>en-US-JennyNeural</option>
+</select>
+
+<input id="topic" placeholder="Weekly topic">
+<button onclick="gen()">Generate Today</button>
+<button onclick="toggleTheme()">Light/Dark</button>
+
+<h3>Upload Songs</h3>
+<form action="/upload" method="post" enctype="multipart/form-data">
+<input type="file" name="song">
+<button>Upload</button>
+</form>
+
+<h3>Archives</h3>
+{% for d in archives %}
+<div class="card">
+<b>{{d}}</b>
+<img src="/output/{{d}}/image.jpg">
+<audio controls src="/output/{{d}}/devotional.mp3"></audio>
+</div>
+{% endfor %}
+</div>
+</body>
+</html>

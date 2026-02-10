@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  devotional:
+    build: .
+    container_name: modern_devotional
+    ports:
+      - "8095:8095"
+    volumes:
+      - ./output:/app/output
+      - ./music:/app/music
+    environment:
+      VOICE: "en-US-AriaNeural"
+      WEEKLY_TOPIC: "Peace"
+    restart: unless-stopped

@@ -1,0 +1,6 @@
+flask
+edge-tts
+requests
+beautifulsoup4
+pydub
+Pillow
