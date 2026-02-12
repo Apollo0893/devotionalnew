@@ -21,7 +21,7 @@ def pick_songs():
         return [],[]
     return songs[:1], songs[1:4]
 
-def build_devotional(topic):
+def create_devotional(topic):
     verses = get_verses(topic, 12)
 
     reflection = generate_reflection(topic, verses)
