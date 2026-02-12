@@ -51,7 +51,7 @@ def generate():
         final_mp3 = os.path.join(folder, "final.mp3")
 
         print("Running TTS...")
-        asyncio run(narrate(text, voice, narration_mp3))
+        asyncio.run(narrate(text, voice, narration_mp3))
 
         print("Adding music...")
         build_final_audio(narration_mp3, MUSIC_DIR, final_mp3)
