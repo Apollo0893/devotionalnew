@@ -1,47 +1,54 @@
-from llm_reflector import generate_reflection
-import os, datetime, random, requests
+import os
+import requests
 
-def fetch_devotional(topic):
-    verses = [f"{topic} scripture {i+1}" for i in range(10)]
-    text = f"Daily devotional on {topic}.\n" + "\n".join(verses)
-    return text
-
-def fetch_image(topic, save_path):
-    try:
-        url = f"https://source.unsplash.com/800x600/?{topic},faith"
-        r = requests.get(url, timeout=15)
-        open(save_path,"wb").write(r.content)
-    except:
-        pass
-
-def pick_songs():
-    songs = [f for f in os.listdir("/app/music") if f.endswith(".mp3")]
-    random.shuffle(songs)
-    if not songs:
-        return [],[]
-    return songs[:1], songs[1:4]
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://ollama:11434")
+MODEL = os.getenv("OLLAMA_MODEL", "llama3")
 
 def build_devotional(topic):
-    verses = get_verses(topic, 12)
+    prompt = f"""
+Create a powerful 3-4 minute Christian devotional about: {topic}
 
-    reflection = generate_reflection(topic, verses)
+Structure:
+- Title
+- Opening prayer
+- Scripture references
+- Deep reflection
+- Encouragement
+- Closing prayer
 
-    devotional = f"""
-Daily Devotional — {topic}
-
-Scripture:
-{verses}
-
-Reflection:
-{reflection}
-
-Closing Prayer:
-Lord, guide us today and help us walk in faith. Amen.
+Make it emotionally moving and pastoral.
 """
 
-    # enforce minimum 15 min spoken length
-    if len(devotional.split()) < 1800:
-        devotional += "\n\n" + reflection * 3
+    try:
+        r = requests.post(
+            f"{OLLAMA_URL}/api/generate",
+            json={
+                "model": MODEL,
+                "prompt": prompt,
+                "stream": False
+            },
+            timeout=120
+        )
 
-    return devotional
+        if r.status_code == 200:
+            return r.json()["response"]
 
+    except Exception as e:
+        print("LLM not reachable:", e)
+
+    # Fallback devotional if ollama fails
+    return f"""
+Daily Devotional: {topic}
+
+Scripture:
+"Be strong and courageous. Do not be afraid." – Joshua 1:9
+
+Reflection:
+Today we reflect on {topic}. Even when life feels uncertain,
+God is guiding each step. Walk forward in faith knowing He
+goes before you.
+
+Prayer:
+Lord, strengthen our hearts today. Help us walk in faith and
+trust your plan. Amen.
+"""
