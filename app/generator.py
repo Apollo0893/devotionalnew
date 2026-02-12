@@ -1,4 +1,4 @@
-
+from llm_reflector import generate_reflection
 import os, datetime, random, requests
 
 def fetch_devotional(topic):
@@ -21,13 +21,27 @@ def pick_songs():
         return [],[]
     return songs[:1], songs[1:4]
 
-def create_devotional(topic):
-    today = datetime.date.today().isoformat()
-    base = f"/app/output/{today}"
-    os.makedirs(base, exist_ok=True)
+def build_devotional(topic):
+    verses = get_verses(topic, 12)
 
-    text = fetch_devotional(topic)
-    open(f"{base}/devotional.txt","w").write(text)
-    fetch_image(topic, f"{base}/image.jpg")
+    reflection = generate_reflection(topic, verses)
 
-    return base, text
+    devotional = f"""
+Daily Devotional — {topic}
+
+Scripture:
+{verses}
+
+Reflection:
+{reflection}
+
+Closing Prayer:
+Lord, guide us today and help us walk in faith. Amen.
+"""
+
+    # enforce minimum 15 min spoken length
+    if len(devotional.split()) < 1800:
+        devotional += "\n\n" + reflection * 3
+
+    return devotional
+
