@@ -30,28 +30,28 @@ def index():
 @app.route("/generate")
 def generate():
     try:
-    topic = request.args.get("topic", TOPIC)
-    voice = request.args.get("voice", VOICE)
+        topic = request.args.get("topic", TOPIC)
+        voice = request.args.get("voice", VOICE)
 
-    ```
-    folder = today_folder()
+        ```
+        folder = today_folder()
 
-    print("Generating devotional on:", topic)
+        print("Generating devotional on:", topic)
 
-    text = build_devotional(topic)
+        text = build_devotional(topic)
 
-    text_file = os.path.join(folder, "devotional.txt")
-    with open(text_file, "w", encoding="utf-8") as f:
-        f.write(text)
+        text_file = os.path.join(folder, "devotional.txt")
+        with open(text_file, "w", encoding="utf-8") as f:
+            f.write(text)
 
-    narration_mp3 = os.path.join(folder, "narration.mp3")
-    final_mp3 = os.path.join(folder, "final.mp3")
+        narration_mp3 = os.path.join(folder, "narration.mp3")
+        final_mp3 = os.path.join(folder, "final.mp3")
 
-    print("Running TTS...")
-    narrate(text, voice, narration_mp3)
+        print("Running TTS...")
+        narrate(text, voice, narration_mp3)
 
-    print("Adding music...")
-    build_final_audio(narration_mp3, MUSIC_DIR, final_mp3)
+        print("Adding music...")
+        build_final_audio(narration_mp3, MUSIC_DIR, final_mp3)
 
     return redirect("/")
 
