@@ -5,7 +5,7 @@ from generator import build_devotional
 from tts import narrate
 from audio_builder import build_final_audio
 
-app = Flask(**name**)
+app = Flask(__name__)
 
 OUTPUT_DIR = "output"
 MUSIC_DIR = "music"
