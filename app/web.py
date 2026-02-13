@@ -62,12 +62,20 @@ def generate():
         print("ERROR:", e)
         return f"Generation failed: {e}"
 
-
 @app.route("/play/<date>")
 def play(date):
     path = os.path.join(OUTPUT_DIR, date, "final.mp3")
-    return send_file(path, mimetype="audio/mpeg")
 
+    if not os.path.exists(path):
+        return "File not found", 404
+
+    return send_file(
+        path,
+        mimetype="audio/mpeg",
+        as_attachment=False,
+        download_name=f"{date}.mp3",
+        conditional=True
+    )
 
 @app.route("/upload", methods=["POST"])
 def upload():
