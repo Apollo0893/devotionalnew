@@ -1,23 +1,33 @@
-from pydub import AudioSegment
-import os, random
+import os
+import random
+import subprocess
 
-def build_final_audio(narration_path, music_folder, output):
-    narration = AudioSegment.from_mp3(narration_path)
-
-    songs = [f for f in os.listdir(music_folder) if f.endswith(".mp3")]
+def build_final_audio(narration_mp3, music_dir, output_mp3):
+    songs = [f for f in os.listdir(music_dir) if f.endswith(".mp3")]
 
     if not songs:
-        narration.export(output, format="mp3")
+        # no music → just copy narration
+        subprocess.run(["cp", narration_mp3, output_mp3])
         return
 
     random.shuffle(songs)
 
-    intro = AudioSegment.from_mp3(os.path.join(music_folder, songs[0]))
-    outros = [AudioSegment.from_mp3(os.path.join(music_folder, s)) for s in songs[1:]]
+    intro = os.path.join(music_dir, songs[0])
+    outro = [os.path.join(music_dir, s) for s in songs[1:3]]
 
-    final = intro + narration
+    files = [intro, narration_mp3] + outro
 
-    for o in outros:
-        final += o
+    concat_list = "/tmp/concat.txt"
+    with open(concat_list, "w") as f:
+        for path in files:
+            f.write(f"file '{os.path.abspath(path)}'\n")
 
-    final.export(output, format="mp3")
+    subprocess.run([
+        "ffmpeg",
+        "-y",
+        "-f", "concat",
+        "-safe", "0",
+        "-i", concat_list,
+        "-c", "copy",
+        output_mp3
+    ])
