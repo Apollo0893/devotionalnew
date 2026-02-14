@@ -1,7 +1,7 @@
 import os
 import datetime
 import asyncio
-from flask import Flask, render_template, send_file, request, redirect
+from flask import Flask, render_template, response, send_file, request, redirect
 from generator import build_devotional
 from tts import narrate
 from audio_builder import build_final_audio
@@ -69,13 +69,36 @@ def play(date):
     if not os.path.exists(path):
         return "File not found", 404
 
-    return send_file(
-        path,
-        mimetype="audio/mpeg",
-        as_attachment=False,
-        download_name=f"{date}.mp3",
-        conditional=True
-    )
+    file_size = os.path.getsize(path)
+    range_header = request.headers.get("Range", None)
+
+    if not range_header:
+        return send_file(path, mimetype="audio/mpeg")
+
+    # Handle browser range requests (THIS fixes 0:00 bug)
+    byte1, byte2 = 0, None
+    match = range_header.replace("bytes=", "").split("-")
+
+    if match[0]:
+        byte1 = int(match[0])
+    if len(match) > 1 and match[1]:
+        byte2 = int(match[1])
+
+    length = file_size - byte1
+    if byte2 is not None:
+        length = byte2 - byte1 + 1
+
+    with open(path, "rb") as f:
+        f.seek(byte1)
+        data = f.read(length)
+
+    rv = Response(data, 206, mimetype="audio/mpeg", direct_passthrough=True)
+    rv.headers.add("Content-Range", f"bytes {byte1}-{byte1+length-1}/{file_size}")
+    rv.headers.add("Accept-Ranges", "bytes")
+    rv.headers.add("Content-Length", str(length))
+
+    return rv
+
 
 @app.route("/upload", methods=["POST"])
 def upload():
